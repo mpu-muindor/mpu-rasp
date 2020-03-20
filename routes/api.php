@@ -14,6 +14,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+Route::get('/user', function (Request $request) {
+    if ($request->user() === null) {
+        return response()->json(['error' => 'You are guest']);
+    }
+
+    return response()->json($request->user());
 });
