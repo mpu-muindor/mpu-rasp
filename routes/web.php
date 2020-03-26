@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,7 +13,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/{any}', static function (Request $request) {
-    return response(['error' => "Unknown route '{$request->path()}'"]);
-})->where('any', '.*');
-
+Route::get('/', function () {
+    return view('welcome');
+});
