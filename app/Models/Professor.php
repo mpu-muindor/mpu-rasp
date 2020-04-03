@@ -46,6 +46,12 @@ class Professor extends Model
      */
     protected $fillable = ['full_name', 'created_at', 'updated_at'];
 
+    protected $hidden = ['id', 'auditories', 'created_at'];
+
+    protected $casts = [
+        'updated_at' => 'datetime:d-m-Y H:i:s'
+    ];
+
     /**
      * Indicates if the model should be timestamped.
      *

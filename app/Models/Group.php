@@ -51,6 +51,13 @@ class Group extends Model
      */
     protected $fillable = ['title', 'course', 'evening', 'created_at', 'updated_at'];
 
+    protected $casts = [
+        'updated_at' => 'datetime:d-m-Y H:i:s',
+        'evening' => 'boolean'
+    ];
+
+    protected $hidden = ['id', 'created_at'];
+
     /**
      * Indicates if the model should be timestamped.
      *

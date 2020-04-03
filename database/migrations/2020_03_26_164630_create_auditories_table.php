@@ -16,7 +16,7 @@ class CreateAuditoriesTable extends Migration
         Schema::create('auditories', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->string('color');
+            $table->string('color')->nullable();
             $table->timestamps();
         });
     }

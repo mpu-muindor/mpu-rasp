@@ -89,6 +89,32 @@ class Lesson extends Model
     public $timestamps = true;
 
     /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'date_from' => 'datetime:Y-m-d',
+        'updated_at' => 'datetime:d-m-Y H:i:s',
+        'date_to' => 'datetime:Y-m-d',
+        'lesson_day' => 'datetime:Y-m-d',
+        'is_session' => 'boolean'
+    ];
+
+    protected $dates = ['date_from', 'date_to', 'lesson_day'];
+
+    protected $with = ['auditories', 'group', 'professors'];
+
+    protected $hidden = ['id', 'group_id', 'created_at'];
+
+    /**
+     * All of the relationships to be touched.
+     *
+     * @var array
+     */
+    protected $touches = ['group'];
+
+    /**
      * Группа, у которой пара
      *
      * @return BelongsTo

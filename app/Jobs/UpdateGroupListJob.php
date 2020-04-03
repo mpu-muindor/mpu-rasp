@@ -83,7 +83,8 @@ class UpdateGroupListJob implements ShouldQueue
      */
     public function failed(Exception $exception)
     {
+        $msg = $exception->getMessage();
         Log::error('[ERROR] Get list of groups failed!');
-        Log::error($exception->getMessage());
+        Log::error($msg);
     }
 }

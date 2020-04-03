@@ -49,6 +49,11 @@ class Auditory extends Model
     protected $fillable = ['title', 'color'];
 
     /**
+     * @var array
+     */
+    protected $hidden = ['id', 'created_at', 'updated_at', 'auditories'];
+
+    /**
      * Indicates if the model should be timestamped.
      *
      * @var bool
