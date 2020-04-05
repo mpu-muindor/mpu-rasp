@@ -32,7 +32,10 @@ class UpdateScheduleJob implements ShouldQueue
     {
         $groups = Group::all();
         foreach ($groups as $group) {
-            UpdateGroupRaspJob::dispatch($group, false)->chain([new UpdateGroupRaspJob($group, true)]);
+            UpdateGroupRaspJob::dispatch($group, false);
+            UpdateGroupRaspJob::dispatch($group, true);
         }
+
+        $this->release(3600);
     }
 }
