@@ -108,7 +108,7 @@ class UpdateGroupRaspJob implements ShouldQueue
                                 $auditory->save();
                                 $new_lesson->auditories()->syncWithoutDetaching([$auditory->id]);
                             }
-                            $new_lesson->remote_access = $lesson['wl'] ?: null;
+                            $new_lesson->remote_access = $lesson['wl'] ?: $new_lesson->remote_access ?? null;
                             foreach (explode(', ', $lesson['teacher']) as $professor) {
                                 $professor = Professor::whereFullName($professor)->first() ?:
                                     new Professor(['full_name' => $professor]);
