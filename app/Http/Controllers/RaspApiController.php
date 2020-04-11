@@ -14,11 +14,14 @@ class RaspApiController extends Controller
      * @param  Request  $request
      * @return array
      */
-    public function get_suggest(Request $request): array
+    public function getSuggest(Request $request): array
     {
         $request->validate(['suggest' => 'required|string|min:2']);
 
         $suggest = $request->get('suggest');
+
+        // TODO: Перенести запросы и обработку в репозиторий
+
         $groups = Group::where('title', 'like', $suggest.'%')->orderBy('title')->limit(3)->get(['title']);
         $professors = Professor::where('full_name', 'like', $suggest.'%')
             ->orderBy('full_name')
