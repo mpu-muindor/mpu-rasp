@@ -2,6 +2,8 @@
 
 namespace App\Console;
 
+use App\Jobs\UpdateGroupListJob;
+use App\Jobs\UpdateScheduleJob;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -24,7 +26,9 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        $schedule->job(new UpdateGroupListJob())->dailyAt(6)->timezone('Europe/Moscow');
+        // Обновление расписания обычно происходит в ~7:00 и после 18 часов
+        $schedule->job(new UpdateScheduleJob())->twiceDaily(8, 20)->timezone('Europe/Moscow');
     }
 
     /**

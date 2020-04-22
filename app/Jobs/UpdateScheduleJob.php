@@ -9,6 +9,14 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
+/**
+ * Class UpdateScheduleJob
+ * Отправляет в очередь обновления расписание всех групп
+ *
+ * @package App\Jobs
+ * @author Egor `Muindor` Fadeev
+ * @version 1.0
+ */
 class UpdateScheduleJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -28,14 +36,12 @@ class UpdateScheduleJob implements ShouldQueue
      *
      * @return void
      */
-    public function handle()
+    public function handle(): void
     {
         $groups = Group::all();
         foreach ($groups as $group) {
             UpdateGroupRaspJob::dispatch($group, false);
             UpdateGroupRaspJob::dispatch($group, true);
         }
-
-        $this->release(3600);
     }
 }

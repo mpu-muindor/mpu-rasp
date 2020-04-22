@@ -13,29 +13,37 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Log;
 
+/**
+ * Class UpdateGroupRaspJob
+ * Обновляет расписание группы
+ *
+ * @package App\Jobs
+ * @author Egor `Muindor` Fadeev
+ * @version 1.0
+ */
 class UpdateGroupRaspJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    /**
-     * @var bool
-     */
-    private $session;
-
-    /**
-     * @var Group
-     */
-    private $group;
 
     /**
      * The number of seconds the job can run before timing out.
      *
      * @var int
      */
-    public $timeout = 120;
+    public int $timeout = 120;
+
+    /**
+     * @var bool
+     */
+    private bool $session;
+
+    /**
+     * @var Group
+     */
+    private Group $group;
 
     /**
      * Create a new job instance.
@@ -78,6 +86,7 @@ class UpdateGroupRaspJob implements ShouldQueue
                     ];
                     foreach ($day_lessons as $lesson_number => $lessons) {
                         foreach ($lessons as $lesson) {
+                            /** @var Lesson $new_lesson */
                             $new_lesson = Lesson::whereGroupId($this->group->id)
                                 ->whereDayNumber($day_number['week_day'])
                                 ->whereLessonNumber($lesson_number)
@@ -97,12 +106,17 @@ class UpdateGroupRaspJob implements ShouldQueue
                             $new_lesson->date_from = $lesson['df'] ?? null;
 
                             $new_lesson->save();
+                            /** @var array $auditory */
                             foreach ($lesson['auditories'] as $auditory) {
+                                // Готовим аудиторию
                                 preg_match('/^<a.*?href=(["\']|["\'\\\\])(.*?)\1.*$/', $auditory['title'], $remote);
                                 if (count($remote) === 3) {
                                     $new_lesson->remote_access = $remote[2];
                                 }
                                 $title = strip_tags($auditory['title']);
+
+                                // Сохраняем в БД и привязываем к паре
+                                /** @var Auditory $auditory */
                                 $auditory = Auditory::whereTitle($title)->first() ?:
                                     new Auditory(['title' => $title, 'color' => $auditory['color'] ?? null]);
                                 $auditory->save();
@@ -148,7 +162,6 @@ class UpdateGroupRaspJob implements ShouldQueue
             Log::error($exception->getMessage());
         } else {
             Log::alert("[ALERT] Group schedule \"$group\" not ready.");
-            $this->delay(3600);
         }
     }
 }
