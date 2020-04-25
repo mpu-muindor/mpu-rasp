@@ -22,7 +22,6 @@ use Log;
  *
  * @package App\Jobs
  * @author Egor `Muindor` Fadeev
- * @version 1.0
  */
 class UpdateGroupRaspJob implements ShouldQueue
 {
@@ -33,17 +32,21 @@ class UpdateGroupRaspJob implements ShouldQueue
      *
      * @var int
      */
-    public int $timeout = 120;
+    public $timeout = 120;
 
     /**
+     * Экзаменационная сессия
+     *
      * @var bool
      */
-    private bool $session;
+    private $session;
 
     /**
+     * Группа
+     *
      * @var Group
      */
-    private Group $group;
+    private $group;
 
     /**
      * Create a new job instance.
@@ -109,35 +112,20 @@ class UpdateGroupRaspJob implements ShouldQueue
                             $new_lesson->lesson_day = $day_number['date'];
                             $new_lesson->date_to = $lesson['dt'] ?? null;
                             $new_lesson->date_from = $lesson['df'] ?? null;
+                            $new_lesson->remote_access = $lesson['wl'] ?? null;
 
+                            if ($new_lesson->id) {
+                                $changes = $new_lesson->getDirty();
+//                                TODO добавить уведомления об изменениях в паре
+                            } else {
+//                                Новая пара
+                            }
                             $new_lesson->save();
-                            /** @var array $auditory */
-                            foreach ($lesson['auditories'] as $auditory) {
-                                // Готовим аудиторию
-                                preg_match('/^<a.*?href=(["\']|["\'\\\\])(.*?)\1.*$/', $auditory['title'], $remote);
-                                if (count($remote) === 3) {
-                                    $new_lesson->remote_access = $remote[2];
-                                }
-                                $title = strip_tags($auditory['title']);
 
-                                // Сохраняем в БД и привязываем к паре
-                                /** @var Auditory $auditory */
-                                $auditory = Auditory::whereTitle($title)->first() ?:
-                                    new Auditory(['title' => $title, 'color' => $auditory['color'] ?? null]);
-                                $auditory->save();
-                                $new_lesson->auditories()->syncWithoutDetaching([$auditory->id]);
-                            }
-                            $new_lesson->remote_access = $lesson['wl'] ?: $new_lesson->remote_access ?? null;
-                            foreach (explode(', ', $lesson['teacher']) as $professor) {
-                                $professor = trim($professor);
-                                if ($professor === '') {
-                                    continue;
-                                }
-                                $professor = Professor::whereFullName($professor)->first() ?:
-                                    new Professor(['full_name' => $professor]);
-                                $professor->save();
-                                $new_lesson->professors()->syncWithoutDetaching([$professor->id]);
-                            }
+                            $this->updateAuditories($lesson['auditories'], $new_lesson);
+
+                            $this->updateTeachers(explode(', ', $lesson['teacher']), $new_lesson);
+
                             $new_lesson->update();
                         }
                     }
@@ -145,7 +133,7 @@ class UpdateGroupRaspJob implements ShouldQueue
                 foreach ($exists_lessons as $lesson) {
                     # Todo добавить softDelete и удалять после отправки уведомления
                     $lesson->forceDelete();
-                };
+                }
             } else {
                 $this->fail(new Exception('Dont exists "grid" in response'));
                 return;
@@ -153,6 +141,71 @@ class UpdateGroupRaspJob implements ShouldQueue
             return;
         }
         $this->fail(new Exception($response->body()));
+    }
+
+    /**
+     * Обновляет аудитории у занятия
+     *
+     * @param  array  $auditories
+     * @param  Lesson  $new_lesson
+     * @return void
+     */
+    private
+    function updateAuditories(array $auditories, Lesson $new_lesson): void
+    {
+        $auditories_old = $new_lesson->auditories;
+        $new_lesson->auditories()->detach();
+        /** @var array $auditory */
+        foreach ($auditories as $auditory) {
+            // Готовим аудиторию
+            $title = strip_tags($auditory['title']);
+
+            // Сохраняем в БД и привязываем к паре
+            /** @var Auditory $auditory */
+            $auditory = Auditory::whereTitle($title)->first() ?:
+                new Auditory(['title' => $title, 'color' => $auditory['color'] ?? null]);
+            $auditory->save();
+            $new_lesson->auditories()->syncWithoutDetaching([$auditory->id]);
+        }
+//         todo Добавить уведомления о новых/удаленных аудиториях у пары
+        /** @var Auditory[] $added_auditories Добавленные аудитории */
+        /** @var Auditory[] $deleted_auditories Удаленные аудитории */
+//        $added_auditories = $new_lesson->auditories()->get()->diff($auditories_old);
+//        $deleted_auditories = $auditories_old->diff($new_lesson->auditories()->get());
+//         ------
+    }
+
+    /**
+     * Обновляет преподавателей пары
+     *
+     * @param $professors array
+     * @param $new_lesson Lesson
+     * @return void
+     */
+    private
+    function updateTeachers(array $professors, Lesson $new_lesson): void
+    {
+        $professors_old = $new_lesson->professors;
+        $new_lesson->professors()->detach();
+        /** @var string $professor */
+        foreach ($professors as $professor) {
+            $professor = trim($professor);
+            if ($professor === '') {
+                continue;
+            }
+
+            /** @var Professor $professor */
+            $professor = Professor::whereFullName($professor)->first() ?:
+                new Professor(['full_name' => $professor]);
+            $professor->save();
+            $new_lesson->professors()->syncWithoutDetaching([$professor->id]);
+        }
+//        todo Добавить уведомления о новых/удаленных преподавателях у пары
+        /** @var Professor[] $added_professors Добавленные преподаватели */
+        /** @var Professor[] $deleted_professors Удаленные преподаватели */
+//        $added_professors = $new_lesson->professors()->get()->diff($professors_old);
+//        $deleted_professors = $professors_old->diff($new_lesson->professors()->get());
+//        ------
     }
 
     /**
