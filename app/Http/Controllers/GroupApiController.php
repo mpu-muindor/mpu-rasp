@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Group;
-use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Collection;
 
 class GroupApiController extends Controller
 {
@@ -32,9 +32,9 @@ class GroupApiController extends Controller
      * Возвращает расписание группы
      *
      * @param  Group  $group
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return Collection
      */
-    public function getLessons (Group $group): \Illuminate\Database\Eloquent\Collection
+    public function getLessons(Group $group): Collection
     {
         return $group->lessons()->orderBy('day_number')->orderBy('lesson_number')->orderBy('date_from')->get();
     }
