@@ -112,7 +112,7 @@ class UpdateGroupRaspJob implements ShouldQueue
                             $new_lesson->lesson_day = $day_number['date'];
                             $new_lesson->date_to = $lesson['dt'] ?? null;
                             $new_lesson->date_from = $lesson['df'] ?? null;
-                            $new_lesson->remote_access = $lesson['wl'] ?? null;
+                            $new_lesson->remote_access = $lesson['wl'] ?? null ?: $new_lesson->remote_access;
 
                             if ($new_lesson->id) {
                                 $changes = $new_lesson->getDirty();
@@ -140,6 +140,12 @@ class UpdateGroupRaspJob implements ShouldQueue
             }
             return;
         }
+
+        if ($response->body() === 'Еще не готово расписание для группы') {
+            Log::alert("[ALERT] Group schedule \"$group\" not ready.");
+            return;
+        }
+
         $this->fail(new Exception($response->body()));
     }
 
@@ -215,12 +221,7 @@ class UpdateGroupRaspJob implements ShouldQueue
     public function failed(Exception $exception): void
     {
         $group = $this->group->title;
-        $msg = $exception->getMessage();
-        if ($msg !== 'Еще не готово расписание для группы') {
-            Log::error("[ERROR] Get list of lessons group \"$group\" failed!");
-            Log::error($exception->getMessage());
-        } else {
-            Log::alert("[ALERT] Group schedule \"$group\" not ready.");
-        }
+        Log::error("[ERROR] Get list of lessons group \"$group\" failed!");
+        Log::error($exception->getMessage());
     }
 }
