@@ -30,21 +30,21 @@ class UpdateGroupListJob implements ShouldQueue
      *
      * @var int
      */
-    public int $tries = 1;
+    public $tries = 1;
 
     /**
      * The maximum number of exceptions to allow before failing.
      *
      * @var int
      */
-    public int $maxExceptions = 1;
+    public $maxExceptions = 1;
 
     /**
      * The number of seconds the job can run before timing out.
      *
      * @var int
      */
-    public int $timeout = 600;
+    public $timeout = 600;
 
     /**
      * Create a new job instance.
