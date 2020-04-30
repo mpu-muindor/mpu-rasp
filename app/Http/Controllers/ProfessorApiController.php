@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Professor;
+use Illuminate\Database\Eloquent\Collection;
 
 class ProfessorApiController extends Controller
 {
@@ -31,9 +32,9 @@ class ProfessorApiController extends Controller
      * Возвращает пары преподавателя
      *
      * @param  Professor  $professor
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return Collection
      */
-    public function getLessons (Professor $professor): \Illuminate\Database\Eloquent\Collection
+    public function getLessons(Professor $professor): Collection
     {
         return $professor->lessons()->get();
     }

@@ -105,7 +105,7 @@ class Lesson extends Model
 
     protected $with = ['auditories', 'group', 'professors'];
 
-    protected $hidden = ['id', 'group_id', 'created_at', 'pivot'];
+    protected $hidden = ['id', 'group_id', 'created_at', 'pivot', 'remote_access'];
 
     /**
      * All of the relationships to be touched.
