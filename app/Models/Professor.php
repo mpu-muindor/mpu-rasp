@@ -49,7 +49,6 @@ class Professor extends Model
     protected $hidden = ['id', 'auditories', 'created_at'];
 
     protected $casts = [
-        'updated_at' => 'datetime:d-m-Y H:i:s'
     ];
 
     /**

@@ -1,0 +1,431 @@
+openapi: 3.0.1
+info:
+  title: MPU-rasp API
+  description: API расписания Московского политеха.
+  contact:
+    name: Egor `Muindor` Fadeev
+    email: api@muindor.com
+    url: https://muindor.com/
+  license:
+    name: MIT
+  version: 1.0.0
+servers:
+  - url: https://dev.muindor.com/api
+paths:
+  /rasp/suggest:
+    get:
+      summary: Возвращает подсказки для поиска.
+      description: "."
+      operationId: rasp.suggest
+      parameters:
+        - name: suggest
+          in: query
+          description: Это часть ФИО преподавателя или названия группы. **Важно:** поиск
+            происходит только по началу строки.
+          required: true
+          schema:
+            minLength: 2
+            type: string
+        - name: offset
+          in: query
+          required: false
+          description: Сдвиг результата запроса.
+          schema:
+            type: integer
+            minimum: 1
+            default: 0
+        - name: limit
+          in: query
+          required: false
+          description: Максимум элементов в ответе.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 32
+            default: 5
+      responses:
+        200:
+          description: Успешная операция.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Suggest'
+        422:
+          description: Ошибка валидации данных.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+  /rasp/search:
+    get:
+      summary: Метод поиска.
+      description: 'Возвращает массив строк, в зависимости от параметров запроса.'
+      operationId: rasp.search
+      parameters:
+        - name: query
+          in: query
+          required: true
+          description: Строка для поиска.
+          schema:
+            type: string
+            minLength: 2
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: ['professor', 'group']
+            default: professor
+      responses:
+        200:
+          description: Успешный поиск.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        422:
+          description: Ошибка валидации данных.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+  /rasp/groups/:
+    get:
+      summary: Возвращает список групп в системе.
+      description: "."
+      operationId: rasp.groups.index
+      responses:
+        200:
+          description: Успешная операция.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Group'
+  /rasp/groups/{group_title}:
+    get:
+      summary: Возвращает группу по названию.
+      description: "."
+      operationId: rasp.groups.show
+      parameters:
+        - name: group_title
+          in: path
+          description: Название группы.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Успешная операция.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        404:
+          description: Группа не найдена.
+          content: {}
+  /rasp/groups/{group_title}/lessons:
+    get:
+      summary: Возвращает список занятий группы {group_title}.
+      description: "."
+      operationId: rasp.group.lessons
+      parameters:
+        - name: group_title
+          in: path
+          description: Название группы.
+          required: true
+          schema:
+            type: string
+        - name: type
+          in: query
+          description: Тип отображения расписания.
+          schema:
+            type: string
+            default: list
+            enum:
+              - list
+              - grid
+        - name: available
+          in: query
+          description: Вернуть только актуальные пары.
+          schema:
+            type: boolean
+            default: false
+      responses:
+        200:
+          description: Успешная операция.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GroupLesson'
+  /rasp/professors/:
+    get:
+      summary: Возвращает список преподавателей в системе.
+      description: "."
+      operationId: rasp.professors.index
+      responses:
+        200:
+          description: Успешная операция.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Professor'
+  /rasp/professors/{professor_full_name}:
+    get:
+      summary: Возвращает преподавателя по ФИО.
+      description: "."
+      operationId: rasp.professors.show
+      parameters:
+        - name: professor_full_name
+          in: path
+          description: ФИО преподавателя.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Успешная операция.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Professor'
+        404:
+          description: Преподаватель не найден.
+          content: {}
+  /rasp/professors/{professor_full_name}/lessons:
+    get:
+      summary: Возвращает список занятий преподавателя {professor_full_name}.
+      description: "."
+      operationId: rasp.professors.lessons
+      parameters:
+        - name: professor_full_name
+          in: path
+          description: ФИО преподавателя.
+          required: true
+          schema:
+            type: string
+        - name: type
+          in: query
+          description: Тип отображения расписания.
+          schema:
+            type: string
+            default: list
+            enum:
+              - list
+              - grid
+        - name: available
+          in: query
+          description: Вернуть только актуальные пары.
+          schema:
+            type: boolean
+            default: false
+      responses:
+        200:
+          description: Успешная операция.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProfessorLesson'
+components:
+  schemas:
+    Auditory:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Номер аудитории.
+        color:
+          type: string
+          description: Цвет текста аудитории.
+          default: null
+          nullable: true
+    Professor:
+      type: object
+      properties:
+        full_name:
+          type: string
+          description: ФИО преподавателя.
+        updated_at:
+          type: string
+          description: Дата последнего обновления информации о преподавателе.
+    GroupLesson:
+      type: object
+      properties:
+        subject:
+          type: string
+          description: Название занятия.
+        date_from:
+          type: string
+          description: Дата начала занятия.
+        date_to:
+          type: string
+          description: Дата завершения занятия.
+        day_number:
+          type: number
+          description: Номер дня недели.
+        lesson_number:
+          type: number
+          description: Номер занятия.
+        lesson_day:
+          type: string
+          description: Если пара проходит только в одиночную дату - возвращается дата
+            этой пары.
+          default: null
+          nullable: true
+        is_session:
+          type: boolean
+          description: Занятие во время сессии.
+        status:
+          type: object
+          properties:
+            started:
+              type: boolean
+              description: Занятие уже проходит.
+            finished:
+              type: boolean
+              description: Занятия закончены.
+        auditories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Auditory'
+        professors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Professor'
+    ProfessorLesson:
+      type: object
+      properties:
+        subject:
+          type: string
+          description: Название занятия.
+        date_from:
+          type: string
+          description: Дата начала занятия.
+        date_to:
+          type: string
+          description: Дата завершения занятия.
+        day_number:
+          type: number
+          description: Номер дня недели.
+        lesson_number:
+          type: number
+          description: Номер занятия.
+        lesson_day:
+          type: string
+          description: Если пара проходит только в одиночную дату - возвращается дата
+            этой пары.
+          default: null
+          nullable: true
+        is_session:
+          type: boolean
+          description: Занятие во время сессии.
+        status:
+          type: object
+          properties:
+            started:
+              type: boolean
+              description: Занятие уже проходит.
+            finished:
+              type: boolean
+              description: Период проведения занятий закончен.
+        auditories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Auditory'
+        group:
+          $ref: '#/components/schemas/Group'
+        professors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Professor'
+    ValidationError:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Сообщение об ошибке валидации данных.
+        errors:
+          type: object
+          properties:
+            WRONG_FIELD:
+              type: array
+              description: Массив с ошибками в параметре.
+              items:
+                type: string
+                description: Сообщение с ошибкой.
+          description: Объект, в котором ключи - имя параметра, а значение - массив
+            сообщений с ошибками валидации.
+    Group:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Номер/название группы.
+        course:
+          type: integer
+          description: Номер курса обучения.
+        evening:
+          type: boolean
+          description: Обучение по расписанию "вечерних групп".
+        updated_at:
+          type: string
+          description: Дата и время последнего обновления в формате ISO8601.
+      description: Объект группы.
+    Suggest:
+      type: object
+      properties:
+        groups:
+          type: array
+          description: Найденные группы.
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+                description: Полное название группы.
+              completion:
+                type: string
+                description: Посказка до полного названия группы.
+        professors:
+          type: array
+          description: Найденные преподаватели.
+          items:
+            type: object
+            properties:
+              full_name:
+                type: string
+                description: Полное ФИО преподавателя.
+              completion:
+                type: string
+                description: Подсказка до полного ФИО преподавателя.
+        params:
+          type: object
+          properties:
+            suggest:
+              type: string
+              description: Полученный запрос, по которому проходил поиск.
+            offset:
+              type: integer
+              description: Сдвиг результатов запроса.
+            limit:
+              type: integer
+              description: Лимит элементов в ответе.
+            total:
+              type: object
+              properties:
+                groups:
+                  type: integer
+                  description: Всего найдено групп по запросу.
+                professors:
+                  type: integer
+                  description: Всего найдено преподавателей по запросу.
