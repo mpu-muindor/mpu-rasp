@@ -15,15 +15,18 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::prefix('rasp')->name('rasp.')->group(static function () {
-    Route::get('/suggest', 'RaspApiController@getSuggest')->name('suggest');
+    Route::get('/suggest', 'Api\RaspController@getSuggest')->name('suggest');
+    Route::get('/search', 'Api\RaspController@getSearch')->name('search');
+
     Route::prefix('professors')->name('professors.')->group(static function () {
-        Route::get('/', 'ProfessorApiController@index')->name('index');
-        Route::get('/{professor:full_name}', 'ProfessorApiController@show')->name('show');
-        Route::get('/{professor:full_name}/lessons', 'ProfessorApiController@getLessons')->name('lessons');
+        Route::get('/', 'Api\ProfessorController@index')->name('index');
+        Route::get('/{professor:full_name}', 'Api\ProfessorController@show')->name('show');
+        Route::get('/{professor:full_name}/lessons', 'Api\LessonsController@getProfessorLessons')->name('lessons');
     });
+
     Route::prefix('groups')->name('groups.')->group(static function () {
-        Route::get('/', 'GroupApiController@index')->name('index');
-        Route::get('/{group:title}', 'GroupApiController@show')->name('show');
-        Route::get('/{group:title}/lessons', 'GroupApiController@getLessons')->name('lessons');
+        Route::get('/', 'Api\GroupController@index')->name('index');
+        Route::get('/{group:title}', 'Api\GroupController@show')->name('show');
+        Route::get('/{group:title}/lessons', 'Api\LessonsController@getGroupLessons')->name('lessons');
     });
 });

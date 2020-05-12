@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Eloquent;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -26,7 +27,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static Builder|Group whereTitle($value)
  * @method static Builder|Group whereUpdatedAt($value)
  * @mixin Eloquent
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Lesson[] $lessons
+ * @property-read Collection|Lesson[] $lessons
  * @property-read int|null $lessons_count
  */
 class Group extends Model
@@ -52,7 +53,6 @@ class Group extends Model
     protected $fillable = ['title', 'course', 'evening', 'created_at', 'updated_at'];
 
     protected $casts = [
-        'updated_at' => 'datetime:d-m-Y H:i:s',
         'evening' => 'boolean'
     ];
 

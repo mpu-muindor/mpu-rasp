@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Eloquent;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -95,9 +96,9 @@ class Lesson extends Model
      */
     protected $casts = [
         'date_from' => 'datetime:Y-m-d',
-        'updated_at' => 'datetime:d-m-Y H:i:s',
+        'updated_at' => 'datetime',
         'date_to' => 'datetime:Y-m-d',
-        'lesson_day' => 'datetime:Y-m-d',
+        'lesson_day' => 'datetime',
         'is_session' => 'boolean'
     ];
 
@@ -107,12 +108,23 @@ class Lesson extends Model
 
     protected $hidden = ['id', 'group_id', 'created_at', 'pivot', 'remote_access'];
 
+    protected $appends = ['status'];
+
     /**
      * All of the relationships to be touched.
      *
      * @var array
      */
-    protected $touches = ['group'];
+    protected $touches = ['group', 'professor'];
+
+    public function getStatusAttribute()
+    {
+        $now = Carbon::now()->hour(0)->minute(0)->second(0)->microsecond(0);
+        return [
+            'started' => $this->date_from <= $now,
+            'finished' => $this->date_to < $now
+        ];
+    }
 
     /**
      * Группа, у которой пара
