@@ -2,6 +2,8 @@
 
 Данная версия спецификации более не поддерживается. Актуальный API описан в [OAS3](RASP_API.yaml)
 
+[URL](https://mpu-muindor.github.io/swagger-api/)
+
 ------
 
 | Method | Name                                              | URI                                                | Description                           |
