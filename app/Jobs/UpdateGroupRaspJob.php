@@ -82,7 +82,7 @@ class UpdateGroupRaspJob implements ShouldQueue
                                      ]);
             }
             if (array_key_exists('grid', $response)) {
-                $exists_lessons = Lesson::whereGroupId($this->group->id)->get();
+                $exists_lessons = Lesson::whereGroupId($this->group->id)->whereIsSession($session)->get();
                 foreach ($response['grid'] as $day_number => $day_lessons) {
                     $day_number = [
                         'date' => is_numeric($day_number) ? null : $day_number,
@@ -96,6 +96,7 @@ class UpdateGroupRaspJob implements ShouldQueue
                                 ->whereLessonNumber($lesson_number)
                                 ->whereSubject($lesson['sbj'])
                                 ->whereType($lesson['type'])
+                                ->whereIsSession($session)
                                 ->whereDateTo($lesson['dt'] ?? null)->first() ?: new Lesson();
 
                             $exists_lessons = $exists_lessons->reject(static function ($item) use ($new_lesson) {

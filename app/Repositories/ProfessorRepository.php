@@ -77,7 +77,6 @@ class ProfessorRepository extends CoreRepository
     public function getLessonsAvailableOnlyList(Professor $professor): Collection
     {
         return new Collection($this->getLessonsList($professor)
-            ->where('status.started', '=', true)
             ->where('status.finished', '=', false));
     }
 

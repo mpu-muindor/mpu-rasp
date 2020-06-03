@@ -106,7 +106,7 @@ class Lesson extends Model
 
     protected $with = ['auditories', 'group', 'professors'];
 
-    protected $hidden = ['id', 'group_id', 'created_at', 'pivot', 'remote_access'];
+    protected $hidden = ['id', 'group_id', 'created_at', 'pivot'];
 
     protected $appends = ['status'];
 
@@ -120,7 +120,10 @@ class Lesson extends Model
     public function getStatusAttribute()
     {
         $now = Carbon::now()->hour(0)->minute(0)->second(0)->microsecond(0);
-        return [
+        return ($this->lesson_day) ? [
+            'started' => $this->lesson_day == $now,
+            'finished' => $this->lesson_day == $now
+        ] : [
             'started' => $this->date_from <= $now,
             'finished' => $this->date_to < $now
         ];

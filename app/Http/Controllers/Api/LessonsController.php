@@ -8,6 +8,7 @@ use App\Models\Professor;
 use App\Repositories\GroupRepository;
 use App\Repositories\ProfessorRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class LessonsController extends Controller
 {
@@ -18,9 +19,9 @@ class LessonsController extends Controller
      * @param  Request  $request
      * @param  GroupRepository  $groupRepository
      *
-     * @return array
+     * @return Collection
      */
-    public function getGroupLessons(Group $group, Request $request, GroupRepository $groupRepository): array
+    public function getGroupLessons(Group $group, Request $request, GroupRepository $groupRepository): Collection
     {
         $request->validate([
             'type' => 'string|in:list,grid',
@@ -46,7 +47,7 @@ class LessonsController extends Controller
             $data = $groupRepository->getLessonsList($group);
         }
 
-        return array_values($data->toArray());
+        return $data;
     }
 
     /**
@@ -56,13 +57,13 @@ class LessonsController extends Controller
      * @param  Request  $request
      * @param  ProfessorRepository  $professorRepository
      *
-     * @return array
+     * @return Collection
      */
     public function getProfessorLessons(
         Professor $professor,
         Request $request,
         ProfessorRepository $professorRepository
-    ): array {
+    ): Collection {
         ['type' => $type, 'available' => $available] = $request->all(['type', 'available']);
         $type = $type ?? 'list';
         $available = $available ?? false;
@@ -83,7 +84,7 @@ class LessonsController extends Controller
             $data = $professorRepository->getLessonsList($professor);
         }
 
-        return array_values($data->toArray());
+        return $data;
     }
 
 }
