@@ -78,7 +78,6 @@ class GroupRepository extends CoreRepository
     public function getLessonsAvailableOnlyList(Group $group): Collection
     {
         return new Collection($this->getLessonsList($group)
-            ->where('status.started', '=', true)
             ->where('status.finished', '=', false));
     }
 
